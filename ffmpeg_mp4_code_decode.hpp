@@ -30,6 +30,7 @@ private:
     FILE *file_ = nullptr;
     image_process_type image_processor_;
     uint8_t *decode_buf = nullptr;
+    uint8_t endcode_array_[4] = { 0, 0, 1, 0xb7 };
 public:
     ffmpeg_mp4_code_decode() = default;
     virtual ~ffmpeg_mp4_code_decode() {
@@ -47,9 +48,10 @@ public:
         height_ = h;
     }
     bool init_code() {
-        codec_ = avcodec_find_encoder(AV_CODEC_ID_MPEG4);
+        //codec_ = avcodec_find_encoder(AV_CODEC_ID_MPEG4);     // there is fps problem with potplayer
+        codec_ = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
         if (nullptr == codec_) {
-            LOG_E("codec for mpeg4 is null!");
+            LOG_E("codec for mpeg1video is null!");
             return false;
 	    }
         codec_ctx_ = avcodec_alloc_context3(codec_);
@@ -97,14 +99,15 @@ public:
         return true;
     }
     bool init_decode() {
-        codec_ = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
+        //codec_ = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
+        codec_ = avcodec_find_decoder(AV_CODEC_ID_MPEG1VIDEO);
         if (nullptr == codec_) {
-            LOG_E("decodec for mpeg4 is null!");
+            LOG_E("decodec for mpeg1video is null!");
             return false;
 	    }
         parser_ = av_parser_init(codec_->id);
         if (nullptr == parser_) {
-            LOG_E("parser for MP4 not found!");
+            LOG_E("parser for mpeg1video not found!");
             return false;
         }
         codec_ctx_ = avcodec_alloc_context3(codec_);
@@ -160,6 +163,7 @@ public:
     }
     void get_code_mp4() {
         encode(codec_ctx_, nullptr, packet_, file_);
+        fwrite(endcode_array_, 1, sizeof(endcode_array_), file_);      // only for mpeg1video or mpeg2video
         fclose(file_);
         file_ = nullptr;
     }

@@ -41,7 +41,7 @@ int main(int argc, const char**argv) {
     }
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
-    int loop = fps * duration_seconds;
+    int loop = duration_seconds * fps;
     for (int i = 0;i < loop;i++) {
         *img_y = i % 256;
         code_mp4.code_i420_frame(img_y, img_u, img_v);
